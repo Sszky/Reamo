@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Reamo – Login Test</title>
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 40px; max-width: 600px; }
+    pre  { background: #f4f4f4; padding: 16px; border-radius: 8px;
+           white-space: pre-wrap; word-break: break-all; }
+    button { padding: 8px 16px; margin-top: 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Reamo – ทดสอบ Google Login</h1>
+
+  <div id="g_id_onload"
+       data-client_id="916453174548-j7q9ku38klb000tjc9815guo6ihb3t4g.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false"></div>
+
+  <div class="g_id_signin" data-type="standard" data-size="large"></div>
+
+  <h3>ผลลัพธ์</h3>
+  <pre id="output">ยังไม่ได้ล็อกอิน</pre>
+
+  <button onclick="callMe()">ทดสอบ GET /auth/me</button>
+
+  <script>
+    let accessToken = null;
+
+    async function handleCredentialResponse(response) {
+      // response.credential คือ ID token จาก Google
+      const res = await fetch('/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: response.credential }),
+      });
+      const data = await res.json();
+      accessToken = data.accessToken;
+      document.getElementById('output').textContent =
+        JSON.stringify(data, null, 2);
+    }
+
+    async function callMe() {
+      if (!accessToken) {
+        alert('ล็อกอินก่อน');
+        return;
+      }
+      const res = await fetch('/auth/me', {
+        headers: { Authorization: 'Bearer ' + accessToken },
+      });
+      const data = await res.json();
+      document.getElementById('output').textContent =
+        JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
