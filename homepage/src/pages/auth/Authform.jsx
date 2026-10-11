@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import GoogleButton from "../../components/GoogleButton.jsx";
+
 import "./Auth.css";
 
 const translations = {
@@ -35,6 +37,11 @@ const translations = {
       "Frontend preview: your details passed the form checks. No account was created and you have not been logged in.",
     previewLabel:
       "Preview only — account services are not connected yet.",
+    or: "or",
+    welcome: "Logged in as",
+    googleFailed: "Google sign-in failed:",
+    googleMissing:
+      "VITE_GOOGLE_CLIENT_ID is not set in homepage/.env",
   },
 
   th: {
@@ -68,6 +75,11 @@ const translations = {
     preview:
       "ตัวอย่าง Frontend: ข้อมูลผ่านการตรวจฟอร์มแล้ว ยังไม่ได้สร้างบัญชีหรือเข้าสู่ระบบจริง",
     previewLabel: "โหมดตัวอย่าง — ยังไม่ได้เชื่อมระบบบัญชี",
+    or: "หรือ",
+    welcome: "เข้าสู่ระบบแล้วในชื่อ",
+    googleFailed: "เข้าสู่ระบบด้วย Google ไม่สำเร็จ:",
+    googleMissing:
+      "ยังไม่ได้ตั้งค่า VITE_GOOGLE_CLIENT_ID ใน homepage/.env",
   },
 };
 
@@ -77,6 +89,7 @@ export default function AuthForm({ mode, language }) {
 
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [googleMessage, setGoogleMessage] = useState("");
 
   const titleRef = useRef(null);
   const nameRef = useRef(null);
@@ -90,6 +103,18 @@ export default function AuthForm({ mode, language }) {
   nameRef.current?.setCustomValidity("");
   confirmRef.current?.setCustomValidity("");
 }, [language]);
+
+  function handleGoogleSuccess(user) {
+    setGoogleMessage(t.welcome + " " + (user.name || user.email));
+  }
+
+  function handleGoogleError(message) {
+    setGoogleMessage(
+      message === "missing-client-id"
+        ? t.googleMissing
+        : t.googleFailed + " " + message,
+    );
+  }
 
   function clearFeedback() {
     nameRef.current?.setCustomValidity("");
@@ -280,6 +305,24 @@ export default function AuthForm({ mode, language }) {
                 {submitted ? t.preview : ""}
               </p>
             </form>
+
+            <div className="auth-divider">
+              <span>{t.or}</span>
+            </div>
+
+            <GoogleButton
+              language={language}
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+            />
+
+            <p
+              className="auth-status"
+              role="status"
+              aria-live="polite"
+            >
+              {googleMessage}
+            </p>
 
             <p className="auth-switch">
               {signup ? t.haveAccount : t.noAccount}{" "}
