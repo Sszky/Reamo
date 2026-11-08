@@ -29,7 +29,7 @@ router.post('/google', async (req, res) => {
     }
 
     // 3) หา user ในฐานข้อมูล ไม่มีก็สร้าง
-    const user = findOrCreateUser({
+    const user = await findOrCreateUser({
       sub: payload.sub,
       email: payload.email,
       name: payload.name,

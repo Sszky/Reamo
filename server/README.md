@@ -10,7 +10,7 @@
 | --- | --- |
 | Runtime | Node.js 20+ |
 | Web framework | Express 5 |
-| Database | SQLite (better-sqlite3) |
+| Database | PostgreSQL บน Supabase (`pg`) |
 | Auth | Google Identity Services + JWT |
 
 ## เริ่มต้นใช้งาน
@@ -36,6 +36,8 @@ cp .env.example .env
 | `GOOGLE_CLIENT_SECRET` | Client Secret จาก Google Cloud Console |
 | `JWT_SECRET` | ข้อความสุ่มยาว ๆ ใช้เซ็น token ของระบบ |
 | `CLIENT_ORIGIN` | URL ของ frontend ที่อนุญาตให้เรียก API |
+| `DATABASE_URL` | connection string ของ Supabase แบบ Session pooler |
+| `DATABASE_CA_CERT` | (ไม่บังคับ) path ไปยังไฟล์ CA ของ Supabase เพื่อตรวจใบรับรอง SSL |
 
 ### 3. ขอ OAuth credentials จาก Google
 
@@ -53,7 +55,20 @@ cp .env.example .env
 
 7. นำ Client ID และ Client Secret ที่ได้ไปใส่ใน `.env`
 
-### 4. รัน
+### 4. ตั้งค่าฐานข้อมูล Supabase
+
+1. สร้างโปรเจกต์ที่ [supabase.com](https://supabase.com) แล้วจดรหัสผ่านฐานข้อมูลไว้
+2. กด **Connect** แล้วคัดลอก connection string แบบ **Session pooler** (แบบ Direct ใช้ IPv6 ซึ่งเน็ตบ้านหลายที่ต่อไม่ได้)
+3. ใส่ใน `.env` เป็น `DATABASE_URL` โดยแทน `[YOUR-PASSWORD]` ด้วยรหัสผ่านจริง
+4. สร้างตาราง
+
+   ```bash
+   npm run db:init
+   ```
+
+   หรือคัดลอก `src/schema.sql` ไปรันใน SQL Editor ของ Supabase ก็ได้
+
+### 5. รัน
 
 ```bash
 npm run dev
@@ -138,7 +153,9 @@ Authorization: Bearer <accessToken>
 ├── public/
 │   └── test.html      หน้าทดสอบการล็อกอิน
 ├── src/
-│   ├── db.js          เชื่อมต่อ SQLite และจัดการตาราง users
+│   ├── db.js          เชื่อมต่อ PostgreSQL และ query ตาราง users
+│   ├── schema.sql     คำสั่งสร้างตาราง
+│   ├── init-db.js     รัน schema.sql (npm run db:init)
 │   ├── jwt.js         สร้างและตรวจสอบ access token
 │   ├── auth.js        route การล็อกอินและ middleware ตรวจสิทธิ์
 │   └── server.js      ตั้งค่า Express และรวม route
@@ -150,7 +167,9 @@ Authorization: Bearer <accessToken>
 
 - Access token มีอายุ 7 วัน เมื่อหมดอายุต้องล็อกอินใหม่
 - ผู้ใช้ถูกระบุด้วย Google account ID (`sub`) ไม่ใช่อีเมล จึงเปลี่ยนอีเมลใน Google ได้โดยข้อมูลไม่หาย
-- ไฟล์ `.env` และ `*.db` ถูกกำหนดไว้ใน `.gitignore` แล้ว ห้าม commit ขึ้น repository
+- ไฟล์ `.env` ถูกกำหนดไว้ใน `.gitignore` แล้ว ห้าม commit ขึ้น repository เพราะมีรหัสผ่านฐานข้อมูล
+- ตาราง `users` เปิด Row Level Security ไว้โดยไม่มี policy เพื่อปิด API อัตโนมัติของ Supabase ข้อมูลจึงเข้าถึงได้ผ่าน server นี้เท่านั้น
+- เลข `id` อาจข้ามได้ เพราะ `ON CONFLICT` ใช้เลขไปทุกครั้งที่ล็อกอินซ้ำ เป็นพฤติกรรมปกติของ PostgreSQL
 
 ## ยังไม่ได้ทำ
 
