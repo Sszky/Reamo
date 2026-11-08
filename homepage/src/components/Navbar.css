@@ -1,25 +1,41 @@
+/* Sticks to the top while scrolling; only the bar itself catches clicks. */
 .navbar {
-  position: relative;
-  z-index: 5;
-  background: var(--sand);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 14px 16px 0;
+  pointer-events: none;
 }
 
+.nav-inner,
+.mobile-menu {
+  pointer-events: auto;
+}
+
+/* A rounded bar that floats on the page rather than filling its width. */
 .nav-inner {
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  min-height: 88px;
+  gap: 8px;
+  min-height: 58px;
   max-width: 1280px;
   margin: auto;
-  padding: 12px 20px;
+  padding: 5px 12px 5px 22px;
+  border: 1px solid var(--honey);
+  border-radius: 999px;
+  background: var(--butter);
+  transition: box-shadow 0.25s;
+}
+
+/* A small shadow once the page has scrolled, so the bar reads as floating above it. */
+.navbar.scrolled .nav-inner {
+  box-shadow: 0 2px 4px #4a322230;
 }
 
 .logo {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -1px;
+  font-size: 22px;
+  font-family: var(--display);
+  letter-spacing: 0.04em;
   line-height: 1;
 }
 
@@ -29,84 +45,71 @@
 }
 
 .language-switch {
-  position: absolute;
-  right: 14px;
-  top: 14px;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
+  margin-left: auto;
   font-size: 14px;
-  font-weight: 600;
 }
 
 .language-switch button {
-  min-width: 32px;
-  min-height: 36px;
+  min-width: 34px;
+  min-height: 44px;
   padding: 3px;
-  background: transparent;
 }
 
 .language-switch button[aria-pressed="true"] {
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 5px;
 }
 
 .menu-button {
-  position: absolute;
-  bottom: 5px;
-  left: calc(50% - 22px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 5px;
   width: 44px;
-  height: 40px;
-  background: transparent;
+  height: 44px;
 }
 
 .menu-button span {
-  width: 20px;
+  width: 22px;
   height: 2px;
-  background: var(--brown);
+  background: var(--cocoa);
   border-radius: 2px;
 }
 
 .mobile-menu {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  padding: 8px 24px 18px;
-  border-top: 1px solid #826b4f30;
+  margin-top: 8px;
+  padding: 10px 22px;
+  border: 1px solid var(--honey);
+  border-radius: 20px;
+  background: var(--butter);
 }
 
-.mobile-menu a,
-.mobile-menu button {
-  padding: 12px;
-  background: transparent;
+.mobile-menu a {
+  padding: 8px 0;
   font-size: 18px;
-  font-weight: 500;
-  text-align: center;
 }
 
-.mobile-menu a:hover,
-.mobile-menu button:hover {
-  background: var(--cream);
-  border-radius: 16px;
+.mobile-menu a[aria-current="page"] {
+  font-weight: 600;
 }
 
-@media (min-width: 768px) {
-  .nav-inner {
-    min-height: 60px;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 8px 40px;
+@media (min-width: 900px) {
+  .navbar {
+    padding: 18px 40px 0;
   }
 
-  .logo {
-    font-size: 25px;
+  .nav-inner {
+    position: relative;
+    gap: 20px;
+    min-height: 62px;
+    padding: 6px 16px 6px 32px;
   }
 
   .menu-button,
@@ -115,63 +118,59 @@
   }
 
   .desktop-nav {
+    position: absolute;
+    left: 50%;
     display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-left: auto;
-  }
-
-  .desktop-nav a,
-  .desktop-nav button {
-    padding: 10px 2px;
-    background: transparent;
-    font-size: 16px;
-    font-weight: 500;
+    gap: 36px;
+    transform: translateX(-50%);
   }
 
   .desktop-nav a {
+    padding: 6px 0;
     border-bottom: 2px solid transparent;
+    font-size: 16px;
+    white-space: nowrap;
   }
 
+  .desktop-nav a:hover,
   .desktop-nav a[aria-current="page"] {
-    border-bottom-color: var(--brown);
-  }
-
-  .desktop-nav a:not([aria-current="page"]):hover {
-    background: color-mix(in srgb, var(--cream) 50%, transparent);
-    border-radius: 20px;
+    border-bottom-color: currentColor;
   }
 
   .account-actions {
     display: flex;
+    align-items: center;
     gap: 10px;
+    margin-left: auto;
   }
 
-  .nav-pill {
-    padding: 7px 17px;
-    border-radius: 40px;
-    background: var(--cream);
-    font-size: 16px;
+  .nav-signup,
+  .nav-login {
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 15px;
+    white-space: nowrap;
+    transition: background-color 0.2s;
   }
 
-  .nav-pill:hover {
-    background: var(--green);
+  .nav-signup {
+    background: var(--mocha);
+    color: var(--paper);
+  }
+
+  .nav-signup:hover {
+    background: var(--mocha-deep);
+  }
+
+  .nav-login {
+    background: var(--blush);
+  }
+
+  .nav-login:hover {
+    background: var(--paper);
   }
 
   .language-switch {
-    position: static;
-  }
-}
-
-@media (min-width: 1100px) {
-  .desktop-nav {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    gap: 42px;
-  }
-
-  .account-actions {
-    margin-left: auto;
+    margin-left: 0;
   }
 }

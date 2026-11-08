@@ -1,3 +1,9 @@
-export default function Footer() {
-  return <footer>@2026 sszky</footer>;
+export default function Footer({ compact = false }) {
+  return (
+    <footer className={compact ? "footer-compact" : undefined}>
+      <div className="footer-hem">
+        <p>@2026 sszky</p>
+      </div>
+    </footer>
+  );
 }

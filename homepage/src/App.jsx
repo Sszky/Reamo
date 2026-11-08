@@ -7,7 +7,7 @@ import Login from "./pages/auth/Login.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
 
 import { translations } from "./i18n.js";
-import "./styles/global.css";
+import "./Styles/Global.css";
 
 function getPage() {
   const page = window.location.hash.slice(1);
@@ -85,7 +85,7 @@ export default function App() {
 
       {page === "signup" && <SignUp language={language} />}
 
-      <Footer />
+      <Footer compact={page !== "home"} />
 
       <div
         className={`notice ${notice ? "visible" : ""}`}
