@@ -1,0 +1,15 @@
+{
+  "name": "reamo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Reamo — keep your memories from your reading",
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm --prefix server run dev\" \"npm --prefix homepage run dev\"",
+    "dev:api": "npm --prefix server run dev",
+    "dev:web": "npm --prefix homepage run dev",
+    "setup": "npm install && npm --prefix server install && npm --prefix homepage install"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

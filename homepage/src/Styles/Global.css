@@ -1,0 +1,112 @@
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap");
+
+:root {
+  --cream: #fff5e6;
+  --sand: #ebd1a7;
+  --brown: #826b4f;
+  --green: #9ecc8f;
+
+  font-family: "Fredoka", "Noto Sans Thai", sans-serif;
+  color: var(--brown);
+  background: var(--cream);
+  font-synthesis: none;
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--brown);
+  outline-offset: 5px;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+footer {
+  padding: 44px 20px 25px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.notice {
+  position: fixed;
+  z-index: 20;
+  bottom: 20px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 14px 22px;
+  border: 1px solid var(--brown);
+  border-radius: 18px;
+  background: var(--cream);
+  font-size: 16px;
+  box-shadow: 0 8px 25px #826b4f26;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 15px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.notice.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+html[lang="th"] {
+  font-family: "Noto Sans Thai", "Fredoka", sans-serif;
+}
+
+html[lang="th"] .logo,
+html[lang="th"] .hero h1 {
+  font-family: "Fredoka", sans-serif;
+}
+
+@media (min-width: 768px) {
+  footer {
+    padding: 26px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
