@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { books, feelings, shelfFiller } from "../../books.js";
+import Bookshelf from "../../components/Bookshelf.jsx";
+import { books, feelings } from "../../books.js";
 import { translations } from "../../i18n.js";
 import "./Home.css";
 
@@ -8,10 +9,6 @@ const imageUrl = (name) => `${import.meta.env.BASE_URL}images/${name}`;
 
 const heroImage = imageUrl("pic1.jpg");
 const galleryImages = ["pic1.jpg", "pic3.jpg", "pic2.jpg"].map(imageUrl);
-
-// Enough unnamed books to fill the shelf on either side of the named ones.
-const leftFiller = Array(2).fill(shelfFiller).flat();
-const rightFiller = [...leftFiller].reverse();
 
 // A loose, hand-drawn arrow so links don't end in a typed "→".
 function DoodleArrow() {
@@ -27,67 +24,18 @@ function DoodleArrow() {
   );
 }
 
-function FillerBooks({ items }) {
-  return items.map((book, index) => (
-    <span
-      className="spine spine-filler"
-      key={index}
-      style={{
-        "--spine-color": book.color,
-        "--spine-width": `${book.width}px`,
-        "--spine-h": book.height,
-      }}
-    />
-  ));
-}
-
 function ShelfPanel({ language, t }) {
   const [selectedId, setSelectedId] = useState("painting");
 
   return (
     <>
-      <div className="bookcase">
-        <div className="shelf" role="group" aria-label={t.shelfLabel}>
-          <span className="shelf-end" aria-hidden="true">
-            <FillerBooks items={leftFiller} />
-          </span>
-
-          {books.map((book) => (
-            <button
-              className="spine"
-              type="button"
-              key={book.id}
-              aria-pressed={book.id === selectedId}
-              style={{
-                "--spine-color": book.color,
-                "--spine-ink": book.ink,
-                "--spine-width": `${book.width}px`,
-                "--spine-h": book.height,
-              }}
-              onClick={() => setSelectedId(book.id)}
-            >
-              <span className="spine-title">{book.title[language]}</span>
-            </button>
-          ))}
-
-          <span className="shelf-plant" aria-hidden="true">
-            <svg viewBox="0 0 74 120">
-              <path d="M37 70C30 52 16 46 6 50c6 12 18 18 31 20Z" fill="#c9d9b0" />
-              <path d="M37 70c6-20 20-27 31-24-5 13-17 21-31 24Z" fill="#a8c6b4" />
-              <path d="M37 70C33 46 38 26 46 16c7 16 3 38-9 54Z" fill="#c9d9b0" />
-              <path d="M37 70V42" fill="none" />
-              <path d="M14 72h46l-6 46H20Z" fill="#e8a87c" />
-              <path d="M10 66h54v10H10Z" fill="#f0c9a8" />
-            </svg>
-          </span>
-
-          <span className="shelf-end" aria-hidden="true">
-            <FillerBooks items={rightFiller} />
-          </span>
-        </div>
-
-        <div className="plank" aria-hidden="true" />
-      </div>
+      <Bookshelf
+        books={books}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        language={language}
+        label={t.shelfLabel}
+      />
 
       <div className="memory-row">
         <p className="shelf-hint">{t.shelfHint}</p>

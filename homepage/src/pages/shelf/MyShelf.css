@@ -1,0 +1,400 @@
+/* My Shelf: a list of the reader's shelves beside one shelf hung on a blue wall. */
+
+.myshelf {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.shelf-list h1 {
+  margin: 0 0 14px;
+  color: var(--rose);
+  font-size: 32px;
+  line-height: 1.25;
+}
+
+.shelf-list ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shelf-list li button {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.shelf-list li button:hover {
+  background: var(--paper);
+}
+
+.shelf-list li button[aria-current="true"] {
+  border-color: var(--honey);
+  background: var(--grain), var(--butter);
+}
+
+.shelf-list-name {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.shelf-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--cocoa-soft);
+  font-size: 14px;
+}
+
+.visibility-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -2px;
+}
+
+.new-shelf {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1.5px dashed var(--honey);
+  border-radius: 14px;
+  width: 100%;
+  color: var(--cocoa-soft);
+  font-size: 16px;
+  text-align: left;
+}
+
+.new-shelf:hover {
+  background: var(--paper);
+  color: var(--cocoa);
+}
+
+/* Small forms that open in place: new shelf, add a book, add a memory. */
+.inline-form {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--cocoa);
+}
+
+.inline-form label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.inline-form input,
+.inline-form select,
+.inline-form textarea,
+.status-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid #6b4f38a6;
+  border-radius: 8px;
+  background: #fffdf5;
+  color: var(--cocoa);
+  font: inherit;
+  font-size: 16px;
+}
+
+.inline-form textarea {
+  font-family: var(--handwriting);
+  resize: vertical;
+}
+
+.inline-form input:focus-visible,
+.inline-form select:focus-visible,
+.inline-form textarea:focus-visible,
+.status-field select:focus-visible {
+  outline: 3px solid var(--cocoa);
+  outline-offset: 2px;
+}
+
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--cocoa-soft);
+  font-size: 13px;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 6px;
+}
+
+.form-actions .button-primary {
+  min-height: 42px;
+  font-size: 16px;
+}
+
+.check-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font-weight: 400 !important;
+}
+
+.check-field input {
+  width: 20px;
+  min-height: 20px;
+  accent-color: var(--mocha);
+}
+
+/* The wall the shelf hangs on: the same blue as the home page section. */
+.shelf-wall {
+  --u: 0.72px;
+
+  min-width: 0;
+  padding: 20px 18px 24px;
+  border-radius: 24px;
+  background: var(--grain), var(--sky);
+  color: var(--navy);
+}
+
+.sample-note {
+  margin: 0 0 18px;
+  padding: 8px 14px;
+  border-left: 3px solid var(--rose);
+  border-radius: 0 8px 8px 0;
+  background: #fffaf0cc;
+  color: var(--cocoa);
+  font-size: 14px;
+}
+
+.sample-note a {
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.shelf-header {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.shelf-header h2 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.25;
+}
+
+.shelf-description {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+
+.shelf-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+/* Private / public switch: the knob slides when the shelf opens to other readers. */
+.visibility-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 14px 6px 8px;
+  border-radius: 999px;
+  background: #fffaf0b3;
+  color: var(--cocoa);
+  text-align: left;
+}
+
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border: 2px solid var(--cocoa);
+  border-radius: 999px;
+  background: var(--paper);
+  transition: background-color 0.2s;
+}
+
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--cocoa);
+  transition: translate 0.2s;
+}
+
+.visibility-switch[aria-checked="true"] .switch-track {
+  background: var(--mocha);
+}
+
+.visibility-switch[aria-checked="true"] .switch-knob {
+  background: var(--paper);
+  translate: 18px 0;
+}
+
+.switch-text {
+  display: grid;
+  line-height: 1.35;
+}
+
+.switch-text strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.switch-text span {
+  font-size: 13px;
+}
+
+.add-book-form {
+  margin: 0 0 18px;
+}
+
+/* The chosen book's card, pinned below the shelf like a paper slip. */
+.book-card {
+  margin: 28px 0 0;
+  padding: 20px 22px;
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--cocoa);
+  box-shadow: 0 14px 24px -14px #2c3e5e80;
+}
+
+.book-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.book-card h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.book-author {
+  margin: 0;
+  color: var(--cocoa-soft);
+  font-size: 15px;
+}
+
+.status-field {
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.book-card h4 {
+  margin: 18px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #8f5a4c66;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.memory-list {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.memory-list .reader-voice {
+  font-size: 19px;
+}
+
+.memory-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 16px;
+  margin: 2px 0 0;
+  color: var(--cocoa-soft);
+  font-size: 14px;
+}
+
+.memory-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.empty-text {
+  margin: 0 0 8px;
+  color: var(--cocoa-soft);
+}
+
+p.book-card.empty-text {
+  margin-top: 28px;
+}
+
+@media (min-width: 900px) {
+  .myshelf {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 32px;
+    padding: 32px 40px 48px;
+  }
+
+  .shelf-list {
+    position: sticky;
+    top: calc(var(--nav-h) + 16px);
+    align-self: start;
+  }
+
+  .shelf-wall {
+    padding: 24px 32px 32px;
+  }
+
+  .add-book-form {
+    grid-template-columns: 2fr 1.4fr 1fr;
+    align-items: end;
+    column-gap: 12px;
+  }
+
+  .add-book-form > div {
+    display: grid;
+    gap: 6px;
+  }
+
+  .add-book-form .form-actions {
+    grid-column: 1 / -1;
+  }
+}
