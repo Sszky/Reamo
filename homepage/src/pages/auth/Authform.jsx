@@ -36,6 +36,10 @@ const translations = {
     blankName: "Please enter a display name.",
     or: "or",
     working: "Please wait…",
+    needLogin: {
+      shelf: "Log in to open your shelves.",
+      account: "Log in to see your account.",
+    },
     checkEmail:
       "Check your email for a link to confirm your account, then log in.",
     errors: {
@@ -80,6 +84,10 @@ const translations = {
     blankName: "กรุณากรอกชื่อที่แสดง",
     or: "หรือ",
     working: "กรุณารอสักครู่…",
+    needLogin: {
+      shelf: "เข้าสู่ระบบก่อน เพื่อเปิดชั้นหนังสือของคุณ",
+      account: "เข้าสู่ระบบก่อน เพื่อดูบัญชีของคุณ",
+    },
     checkEmail:
       "เราส่งลิงก์ยืนยันบัญชีไปที่อีเมลของคุณแล้ว กดยืนยันแล้วค่อยเข้าสู่ระบบ",
     errors: {
@@ -94,7 +102,7 @@ const translations = {
   },
 };
 
-export default function AuthForm({ mode, language }) {
+export default function AuthForm({ mode, language, returnTo }) {
   const signup = mode === "signup";
   const t = translations[language] || translations.en;
 
@@ -242,6 +250,10 @@ export default function AuthForm({ mode, language }) {
             <p className="auth-intro">
               {signup ? t.signupText : t.loginText}
             </p>
+
+            {t.needLogin[returnTo] && (
+              <p className="auth-need-login">{t.needLogin[returnTo]}</p>
+            )}
 
             <form
               onSubmit={handleSubmit}

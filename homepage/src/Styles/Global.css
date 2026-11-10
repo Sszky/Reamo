@@ -114,6 +114,13 @@ h2 {
   font-weight: 400;
 }
 
+/* A reader's own words, in handwriting. */
+.reader-voice {
+  margin: 0;
+  font-family: var(--handwriting);
+  line-height: 1.75;
+}
+
 /* Washi tape: translucent, striped, with torn ends. */
 .tape {
   position: absolute;
