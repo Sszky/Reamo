@@ -1,62 +1,17 @@
 import express from 'express';
-import { OAuth2Client } from 'google-auth-library';
-import { findOrCreateUser } from './db.js';
-import { signAccessToken, verifyAccessToken } from './jwt.js';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { findOrCreateProfile } from './db.js';
 
 const router = express.Router();
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ── POST /auth/google ──────────────────────────────
-router.post('/google', async (req, res) => {
-  const { idToken } = req.body;
-
-  if (!idToken) {
-    return res.status(400).json({ error: 'idToken is required' });
-  }
-
-  try {
-    // 1) ตรวจลายเซ็นกับ Google
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    // 2) แกะข้อมูล user ออกมา
-    const payload = ticket.getPayload();
-
-    if (!payload.email_verified) {
-      return res.status(403).json({ error: 'Email not verified by Google' });
-    }
-
-    // 3) หา user ในฐานข้อมูล ไม่มีก็สร้าง
-    const user = await findOrCreateUser({
-      sub: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      picture: payload.picture,
-    });
-
-    // 4) ออก token ของเราเอง
-    const accessToken = signAccessToken(user);
-
-    // 5) ส่งกลับ
-    res.json({
-      accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        picture: user.picture,
-      },
-    });
-  } catch (err) {
-    console.error('Google auth failed:', err.message);
-    res.status(401).json({ error: 'Invalid Google token' });
-  }
-});
+// Supabase Auth เป็นคนล็อกอินผู้ใช้ (ทั้งอีเมล/รหัสผ่าน และ Google)
+// server ของเราแค่ตรวจว่า token ที่แนบมาเป็นของ Supabase จริง
+// โดยใช้ public key ที่ Supabase เปิดให้ดาวน์โหลด (ไม่ต้องเก็บ secret เอง)
+const issuer = `${process.env.SUPABASE_URL}/auth/v1`;
+const keys = createRemoteJWKSet(new URL(`${issuer}/.well-known/jwks.json`));
 
 // ── middleware ตรวจ token ──────────────────────────
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
 
@@ -65,7 +20,16 @@ export function requireAuth(req, res, next) {
   }
 
   try {
-    req.user = verifyAccessToken(token);
+    const { payload } = await jwtVerify(token, keys, {
+      issuer,
+      audience: 'authenticated',
+    });
+
+    req.user = {
+      id: payload.sub,
+      email: payload.email,
+      metadata: payload.user_metadata || {},
+    };
     next();
   } catch {
     return res.status(401).json({ error: 'Invalid or expired token' });
@@ -73,8 +37,30 @@ export function requireAuth(req, res, next) {
 }
 
 // ── GET /auth/me ───────────────────────────────────
-router.get('/me', requireAuth, (req, res) => {
-  res.json({ user: req.user });
+// เรียกหลังล็อกอินทุกครั้ง: ครั้งแรกจะสร้าง profile ให้
+router.get('/me', requireAuth, async (req, res) => {
+  const { id, email, metadata } = req.user;
+
+  try {
+    const profile = await findOrCreateProfile({
+      id,
+      // สมัครด้วยอีเมลจะได้ display_name จากฟอร์ม ส่วน Google จะได้ full_name
+      displayName: metadata.display_name || metadata.full_name || metadata.name || null,
+      avatarUrl: metadata.avatar_url || metadata.picture || null,
+    });
+
+    res.json({
+      user: {
+        id: profile.id,
+        email,
+        displayName: profile.display_name,
+        avatarUrl: profile.avatar_url,
+      },
+    });
+  } catch (err) {
+    console.error('Loading profile failed:', err.message);
+    res.status(500).json({ error: 'Could not load profile' });
+  }
 });
 
 export default router;

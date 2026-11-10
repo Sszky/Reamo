@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import GoogleButton from "../../components/GoogleButton.jsx";
 
 import { books } from "../../books.js";
+import { supabase, siteUrl } from "../../supabase.js";
 import "./Auth.css";
 
 const translations = {
@@ -33,15 +34,21 @@ const translations = {
     loginLink: "Log in",
     mismatch: "Passwords do not match.",
     blankName: "Please enter a display name.",
-    preview:
-      "Frontend preview: your details passed the form checks. No account was created and you have not been logged in.",
-    previewLabel:
-      "Preview only — account services are not connected yet.",
     or: "or",
-    welcome: "Logged in as",
-    googleFailed: "Google sign-in failed:",
-    googleMissing:
-      "VITE_GOOGLE_CLIENT_ID is not set in homepage/.env",
+    working: "Please wait…",
+    checkEmail:
+      "Check your email for a link to confirm your account, then log in.",
+    errors: {
+      invalid_credentials: "Email or password is incorrect.",
+      email_not_confirmed:
+        "Confirm your email first. The link is in your inbox.",
+      user_already_exists:
+        "This email already has an account. Log in instead.",
+      weak_password: "Choose a longer password that is harder to guess.",
+      rate_limited: "Too many tries. Wait a few minutes, then try again.",
+      google: "Google sign-in didn't start. Try again in a moment.",
+      unknown: "Something went wrong. Try again in a moment.",
+    },
   },
 
   th: {
@@ -71,14 +78,19 @@ const translations = {
     loginLink: "เข้าสู่ระบบ",
     mismatch: "รหัสผ่านทั้งสองช่องไม่ตรงกัน",
     blankName: "กรุณากรอกชื่อที่แสดง",
-    preview:
-      "ตัวอย่าง Frontend: ข้อมูลผ่านการตรวจฟอร์มแล้ว ยังไม่ได้สร้างบัญชีหรือเข้าสู่ระบบจริง",
-    previewLabel: "โหมดตัวอย่าง — ยังไม่ได้เชื่อมระบบบัญชี",
     or: "หรือ",
-    welcome: "เข้าสู่ระบบแล้วในชื่อ",
-    googleFailed: "เข้าสู่ระบบด้วย Google ไม่สำเร็จ:",
-    googleMissing:
-      "ยังไม่ได้ตั้งค่า VITE_GOOGLE_CLIENT_ID ใน homepage/.env",
+    working: "กรุณารอสักครู่…",
+    checkEmail:
+      "เราส่งลิงก์ยืนยันบัญชีไปที่อีเมลของคุณแล้ว กดยืนยันแล้วค่อยเข้าสู่ระบบ",
+    errors: {
+      invalid_credentials: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+      email_not_confirmed: "ยืนยันอีเมลก่อน ลิงก์อยู่ในกล่องจดหมายของคุณ",
+      user_already_exists: "อีเมลนี้มีบัญชีอยู่แล้ว ไปที่หน้าเข้าสู่ระบบแทน",
+      weak_password: "ตั้งรหัสผ่านให้ยาวขึ้นและเดายากขึ้น",
+      rate_limited: "ลองหลายครั้งเกินไป รอสักครู่แล้วลองใหม่",
+      google: "เปิดหน้าเข้าสู่ระบบด้วย Google ไม่สำเร็จ ลองใหม่อีกครั้ง",
+      unknown: "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง",
+    },
   },
 };
 
@@ -87,8 +99,8 @@ export default function AuthForm({ mode, language }) {
   const t = translations[language] || translations.en;
 
   const [showPassword, setShowPassword] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [googleMessage, setGoogleMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
 
   const titleRef = useRef(null);
   const nameRef = useRef(null);
@@ -103,25 +115,23 @@ export default function AuthForm({ mode, language }) {
   confirmRef.current?.setCustomValidity("");
 }, [language]);
 
-  function handleGoogleSuccess(user) {
-    setGoogleMessage(t.welcome + " " + (user.name || user.email));
-  }
+  // Supabase error codes mapped to messages that say what to do next.
+  function errorText(error) {
+    const code = error?.code;
 
-  function handleGoogleError(message) {
-    setGoogleMessage(
-      message === "missing-client-id"
-        ? t.googleMissing
-        : t.googleFailed + " " + message,
-    );
+    if (code === "email_exists") return t.errors.user_already_exists;
+    if (code?.startsWith("over_")) return t.errors.rate_limited;
+
+    return t.errors[code] || t.errors.unknown;
   }
 
   function clearFeedback() {
     nameRef.current?.setCustomValidity("");
     confirmRef.current?.setCustomValidity("");
-    setSubmitted(false);
+    setMessage("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
@@ -143,11 +153,47 @@ export default function AuthForm({ mode, language }) {
 
     if (!form.reportValidity()) return;
 
-    // Add the Backend API request here when it is ready.
-    // This preview does not store or send credentials.
-    setSubmitted(true);
-    form.reset();
-    setShowPassword(false);
+    const email = String(data.get("email")).trim();
+    const password = String(data.get("password"));
+
+    setBusy(true);
+    setMessage("");
+
+    try {
+      if (signup) {
+        // The password goes straight to Supabase Auth, which stores only a bcrypt hash.
+        const { data: result, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: String(data.get("displayName")).trim() },
+            emailRedirectTo: siteUrl,
+          },
+        });
+
+        if (error) throw error;
+
+        // With email confirmation on there is no session yet. Supabase also answers this way
+        // for an email that already has an account, so the page never reveals which emails exist.
+        if (!result.session) {
+          form.reset();
+          setMessage(t.checkEmail);
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+      }
+
+      setShowPassword(false);
+    } catch (error) {
+      setMessage(errorText(error));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -300,8 +346,16 @@ export default function AuthForm({ mode, language }) {
                 )}
               </div>
 
-              <button className="auth-submit" type="submit">
-                {signup ? t.signupButton : t.loginButton}
+              <button
+                className="auth-submit"
+                type="submit"
+                disabled={busy}
+              >
+                {busy
+                  ? t.working
+                  : signup
+                    ? t.signupButton
+                    : t.loginButton}
               </button>
 
               <p
@@ -309,7 +363,7 @@ export default function AuthForm({ mode, language }) {
                 role="status"
                 aria-live="polite"
               >
-                {submitted ? t.preview : ""}
+                {message}
               </p>
             </form>
 
@@ -319,17 +373,8 @@ export default function AuthForm({ mode, language }) {
 
             <GoogleButton
               language={language}
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
+              onError={() => setMessage(t.errors.google)}
             />
-
-            <p
-              className="auth-status"
-              role="status"
-              aria-live="polite"
-            >
-              {googleMessage}
-            </p>
 
             <p className="auth-switch">
               {signup ? t.haveAccount : t.noAccount}{" "}
@@ -339,9 +384,6 @@ export default function AuthForm({ mode, language }) {
               </a>
             </p>
 
-            <p className="auth-preview-label">
-              {t.previewLabel}
-            </p>
           </section>
         </div>
       </div>

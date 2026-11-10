@@ -5,9 +5,9 @@ import authRouter from './auth.js';
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
+// trim(): a stray space in .env would otherwise block every request from the website
+app.use(cors({ origin: process.env.CLIENT_ORIGIN?.trim(), credentials: true }));
 app.use(express.json());
-app.use(express.static('public'));
 
 app.get('/health', (req, res) => {
   res.json({ ok: true, message: 'Reamo API is running' });

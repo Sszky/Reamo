@@ -5,6 +5,7 @@ import "./Navbar.css";
 
 export default function Navbar({
   page,
+  account,
   language,
   onLanguageChange,
   onUnavailable,
@@ -73,7 +74,7 @@ export default function Navbar({
         {t.home}
       </a>
 
-     <a
+      <a
         href="#shelf"
         aria-current={page === "shelf" ? "page" : undefined}
         onClick={placeholderAction}
@@ -108,13 +109,29 @@ export default function Navbar({
         </nav>
 
         <div className="account-actions">
-          <a className="nav-signup" href="#signup">
-            {t.signUp}
-          </a>
+          {account ? (
+            <>
+              <span className="nav-user">{account.name}</span>
 
-          <a className="nav-login" href="#login">
-            {t.logIn}
-          </a>
+              <button
+                className="nav-login"
+                type="button"
+                onClick={account.onLogOut}
+              >
+                {t.logOut}
+              </button>
+            </>
+          ) : (
+            <>
+              <a className="nav-signup" href="#signup">
+                {t.signUp}
+              </a>
+
+              <a className="nav-login" href="#login">
+                {t.logIn}
+              </a>
+            </>
+          )}
         </div>
 
         <div
@@ -163,13 +180,27 @@ export default function Navbar({
         >
           {navigation}
 
-          <a href="#signup" onClick={closeMenu}>
-            {t.signUp}
-          </a>
+          {account ? (
+            <button
+              type="button"
+              onClick={() => {
+                closeMenu();
+                account.onLogOut();
+              }}
+            >
+              {t.logOut} ({account.name})
+            </button>
+          ) : (
+            <>
+              <a href="#signup" onClick={closeMenu}>
+                {t.signUp}
+              </a>
 
-          <a href="#login" onClick={closeMenu}>
-            {t.logIn}
-          </a>
+              <a href="#login" onClick={closeMenu}>
+                {t.logIn}
+              </a>
+            </>
+          )}
         </nav>
       )}
     </header>
