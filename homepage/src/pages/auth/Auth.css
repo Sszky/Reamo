@@ -116,6 +116,14 @@
   outline: none;
 }
 
+.auth-need-login {
+  margin: -6px 0 12px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--rose);
+  background: var(--butter);
+  font-size: 14px;
+}
+
 .auth-intro {
   margin: 0 0 14px;
   color: var(--cocoa-soft);

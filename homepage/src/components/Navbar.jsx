@@ -77,7 +77,7 @@ export default function Navbar({
       <a
         href="#shelf"
         aria-current={page === "shelf" ? "page" : undefined}
-        onClick={placeholderAction}
+        onClick={closeMenu}
       >
         {t.shelf}
       </a>
@@ -108,31 +108,17 @@ export default function Navbar({
           {navigation}
         </nav>
 
-        <div className="account-actions">
-          {account ? (
-            <>
-              <span className="nav-user">{account.name}</span>
+        {!account && (
+          <div className="account-actions">
+            <a className="nav-signup" href="#signup">
+              {t.signUp}
+            </a>
 
-              <button
-                className="nav-login"
-                type="button"
-                onClick={account.onLogOut}
-              >
-                {t.logOut}
-              </button>
-            </>
-          ) : (
-            <>
-              <a className="nav-signup" href="#signup">
-                {t.signUp}
-              </a>
-
-              <a className="nav-login" href="#login">
-                {t.logIn}
-              </a>
-            </>
-          )}
-        </div>
+            <a className="nav-login" href="#login">
+              {t.logIn}
+            </a>
+          </div>
+        )}
 
         <div
           className="language-switch"
@@ -156,6 +142,23 @@ export default function Navbar({
             TH
           </button>
         </div>
+
+        {account && (
+          <a
+            className="nav-avatar"
+            href="#account"
+            aria-label={`${t.account}: ${account.name}`}
+            aria-current={page === "account" ? "page" : undefined}
+            title={account.name}
+            onClick={closeMenu}
+          >
+            {account.avatarUrl ? (
+              <img src={account.avatarUrl} alt="" referrerPolicy="no-referrer" />
+            ) : (
+              <span aria-hidden="true">{account.name.trim().charAt(0).toUpperCase()}</span>
+            )}
+          </a>
+        )}
 
         <button
           className="menu-button"
@@ -181,15 +184,25 @@ export default function Navbar({
           {navigation}
 
           {account ? (
-            <button
-              type="button"
-              onClick={() => {
-                closeMenu();
-                account.onLogOut();
-              }}
-            >
-              {t.logOut} ({account.name})
-            </button>
+            <>
+              <a
+                href="#account"
+                aria-current={page === "account" ? "page" : undefined}
+                onClick={closeMenu}
+              >
+                {t.account}
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  closeMenu();
+                  account.onLogOut();
+                }}
+              >
+                {t.logOut} ({account.name})
+              </button>
+            </>
           ) : (
             <>
               <a href="#signup" onClick={closeMenu}>
