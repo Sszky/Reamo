@@ -15,27 +15,23 @@ export const pool = new pg.Pool({
   ssl,
 });
 
-// หา user จาก google_sub
-export async function findUserByGoogleSub(sub) {
+// หา profile จาก id ของ Supabase Auth
+export async function findProfile(id) {
   const { rows } = await pool.query(
-    'SELECT * FROM public.users WHERE google_sub = $1',
-    [sub]
+    'SELECT * FROM public.profiles WHERE id = $1',
+    [id]
   );
   return rows[0];
 }
 
-// หาไม่เจอก็สร้างใหม่ เจอก็อัปเดตข้อมูลล่าสุด
-// ON CONFLICT ทำทั้งสองอย่างใน query เดียว และ RETURNING ส่งแถวผลลัพธ์กลับมาเลย
-export async function findOrCreateUser({ sub, email, name, picture }) {
-  const { rows } = await pool.query(
-    `INSERT INTO public.users (google_sub, email, name, picture)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (google_sub) DO UPDATE
-       SET email = EXCLUDED.email,
-           name = EXCLUDED.name,
-           picture = EXCLUDED.picture
-     RETURNING *`,
-    [sub, email, name, picture]
+// สร้าง profile ครั้งแรกที่ผู้ใช้ล็อกอิน
+// ON CONFLICT DO NOTHING: ถ้ามีอยู่แล้วจะไม่ทับ ชื่อที่ผู้ใช้แก้เองทีหลังจึงไม่หาย
+export async function findOrCreateProfile({ id, displayName, avatarUrl }) {
+  await pool.query(
+    `INSERT INTO public.profiles (id, display_name, avatar_url)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (id) DO NOTHING`,
+    [id, displayName, avatarUrl]
   );
-  return rows[0];
+  return findProfile(id);
 }

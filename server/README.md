@@ -2,7 +2,7 @@
 
 (Personal Project) - Reamo : keep your memories from your reading
 
-เว็บสำหรับเก็บหนังสือที่ชอบ ส่วนนี้คือ **API ฝั่ง backend** — รับผิดชอบการล็อกอินผ่าน Google และจัดการข้อมูลผู้ใช้
+เว็บสำหรับเก็บหนังสือที่ชอบ ส่วนนี้คือ **API ฝั่ง backend** — ตรวจสิทธิ์ผู้ใช้ที่ล็อกอินผ่าน Supabase Auth และจัดการข้อมูลของแอป
 
 ## Tech stack
 
@@ -11,7 +11,14 @@
 | Runtime | Node.js 20+ |
 | Web framework | Express 5 |
 | Database | PostgreSQL บน Supabase (`pg`) |
-| Auth | Google Identity Services + JWT |
+| Auth | Supabase Auth (อีเมล/รหัสผ่าน และ Google) ตรวจ token ด้วย `jose` |
+
+## การล็อกอินทำงานยังไง
+
+1. ผู้ใช้สมัครหรือล็อกอินที่หน้าเว็บ ทั้งแบบอีเมล/รหัสผ่าน และ Google ผ่าน **Supabase Auth** โดยตรง
+2. รหัสผ่านไม่ผ่าน server นี้เลย Supabase เก็บเป็น hash (bcrypt) ในตาราง `auth.users`
+3. หน้าเว็บได้ access token จาก Supabase แล้วแนบมากับทุก request เป็น `Authorization: Bearer <token>`
+4. server นี้ตรวจลายเซ็นของ token ด้วย public key ของ Supabase (`/auth/v1/.well-known/jwks.json`) ไม่ต้องเก็บ secret เอง
 
 ## เริ่มต้นใช้งาน
 
@@ -32,30 +39,12 @@ cp .env.example .env
 | ตัวแปร | คำอธิบาย |
 | --- | --- |
 | `PORT` | port ที่ API รัน (ค่าเริ่มต้น 3000) |
-| `GOOGLE_CLIENT_ID` | Client ID จาก Google Cloud Console |
-| `GOOGLE_CLIENT_SECRET` | Client Secret จาก Google Cloud Console |
-| `JWT_SECRET` | ข้อความสุ่มยาว ๆ ใช้เซ็น token ของระบบ |
 | `CLIENT_ORIGIN` | URL ของ frontend ที่อนุญาตให้เรียก API |
+| `SUPABASE_URL` | URL ของโปรเจกต์ Supabase เช่น `https://xxxx.supabase.co` |
 | `DATABASE_URL` | connection string ของ Supabase แบบ Session pooler |
 | `DATABASE_CA_CERT` | (ไม่บังคับ) path ไปยังไฟล์ CA ของ Supabase เพื่อตรวจใบรับรอง SSL |
 
-### 3. ขอ OAuth credentials จาก Google
-
-1. เข้า [Google Cloud Console](https://console.cloud.google.com) สร้างโปรเจกต์ใหม่
-2. **APIs & Services → OAuth consent screen** → เลือก External → กรอกชื่อแอปและอีเมล
-3. Scope ที่ใช้: `openid`, `email`, `profile`
-4. เพิ่มอีเมลของทีมใน **Test users** (ตอนแอปยังอยู่สถานะ Testing จะล็อกอินได้เฉพาะอีเมลในรายการนี้)
-5. **Credentials → Create Credentials → OAuth client ID** → เลือก Web application
-6. ใส่ **Authorized JavaScript origins**
-
-   ```
-   http://localhost:3000
-   http://localhost:5173
-   ```
-
-7. นำ Client ID และ Client Secret ที่ได้ไปใส่ใน `.env`
-
-### 4. ตั้งค่าฐานข้อมูล Supabase
+### 3. ตั้งค่าฐานข้อมูล Supabase
 
 1. สร้างโปรเจกต์ที่ [supabase.com](https://supabase.com) แล้วจดรหัสผ่านฐานข้อมูลไว้
 2. กด **Connect** แล้วคัดลอก connection string แบบ **Session pooler** (แบบ Direct ใช้ IPv6 ซึ่งเน็ตบ้านหลายที่ต่อไม่ได้)
@@ -68,6 +57,16 @@ cp .env.example .env
 
    หรือคัดลอก `src/schema.sql` ไปรันใน SQL Editor ของ Supabase ก็ได้
 
+### 4. ตั้งค่า Supabase Auth
+
+ใน Supabase ไปที่ **Authentication**
+
+- **Sign In / Providers → Email:** เปิดใช้งาน และเปิด Confirm email
+- **Sign In / Providers → Google:** ใส่ Client ID และ Client Secret จาก Google Cloud Console
+- **URL Configuration:** Site URL เป็น `http://localhost:5173/Reamo/` และเพิ่มที่อยู่เดียวกันใน Redirect URLs
+
+ใน Google Cloud Console ที่ OAuth client เดียวกัน เพิ่ม `https://<project>.supabase.co/auth/v1/callback` ใน **Authorized redirect URIs**
+
 ### 5. รัน
 
 ```bash
@@ -76,44 +75,16 @@ npm run dev
 
 เปิด http://localhost:3000/health เพื่อตรวจว่าเซิร์ฟเวอร์ทำงาน
 
-ทดสอบการล็อกอินได้ที่ http://localhost:3000/test.html (ใส่ Client ID ในไฟล์ `public/test.html` ก่อน)
-
 ## API
-
-### `POST /auth/google`
-
-แลก ID token จาก Google เป็น access token ของระบบ ใช้ทั้งตอนสมัครครั้งแรกและล็อกอินซ้ำ — ผู้ใช้ใหม่จะถูกสร้างอัตโนมัติ
-
-**Request**
-
-```json
-{
-  "idToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6..."
-}
-```
-
-**Response 200**
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
-  "user": {
-    "id": 1,
-    "email": "user@example.com",
-    "name": "User Name",
-    "picture": "https://lh3.googleusercontent.com/a/..."
-  }
-}
-```
 
 ### `GET /auth/me`
 
-คืนข้อมูลผู้ใช้จาก access token ใช้เช็คว่า token ที่เก็บไว้ยังใช้ได้อยู่หรือไม่
+คืนข้อมูลผู้ใช้ที่ล็อกอินอยู่ ครั้งแรกที่เรียกจะสร้าง profile ให้อัตโนมัติ โดยใช้ชื่อที่กรอกตอนสมัคร หรือชื่อจากบัญชี Google
 
 **Headers**
 
 ```
-Authorization: Bearer <accessToken>
+Authorization: Bearer <Supabase access token>
 ```
 
 **Response 200**
@@ -121,11 +92,10 @@ Authorization: Bearer <accessToken>
 ```json
 {
   "user": {
-    "sub": "1",
+    "id": "9f0c8a1e-...",
     "email": "user@example.com",
-    "name": "User Name",
-    "iat": 1791653009,
-    "exp": 1792257809
+    "displayName": "User Name",
+    "avatarUrl": "https://lh3.googleusercontent.com/a/..."
   }
 }
 ```
@@ -140,24 +110,19 @@ Authorization: Bearer <accessToken>
 
 | Status | Error | สาเหตุ |
 | --- | --- | --- |
-| 400 | `idToken is required` | ไม่ได้ส่ง `idToken` มาใน body |
-| 401 | `Invalid Google token` | ID token ไม่ถูกต้อง หมดอายุ หรือ Client ID ไม่ตรง |
 | 401 | `Missing token` | ไม่ได้แนบ `Authorization` header |
-| 401 | `Invalid or expired token` | access token หมดอายุหรือถูกแก้ไข |
-| 403 | `Email not verified by Google` | บัญชี Google ยังไม่ได้ยืนยันอีเมล |
+| 401 | `Invalid or expired token` | token หมดอายุ ถูกแก้ไข หรือไม่ได้มาจาก Supabase โปรเจกต์นี้ |
+| 500 | `Could not load profile` | อ่านหรือสร้าง profile ในฐานข้อมูลไม่สำเร็จ |
 
 ## โครงสร้างโปรเจกต์
 
 ```
 .
-├── public/
-│   └── test.html      หน้าทดสอบการล็อกอิน
 ├── src/
-│   ├── db.js          เชื่อมต่อ PostgreSQL และ query ตาราง users
+│   ├── auth.js        middleware ตรวจ token ของ Supabase และ route /auth/me
+│   ├── db.js          เชื่อมต่อ PostgreSQL และ query ตาราง profiles
 │   ├── schema.sql     คำสั่งสร้างตาราง
 │   ├── init-db.js     รัน schema.sql (npm run db:init)
-│   ├── jwt.js         สร้างและตรวจสอบ access token
-│   ├── auth.js        route การล็อกอินและ middleware ตรวจสิทธิ์
 │   └── server.js      ตั้งค่า Express และรวม route
 ├── .env               ค่าลับ (ไม่อยู่ใน repository)
 └── package.json
@@ -165,14 +130,17 @@ Authorization: Bearer <accessToken>
 
 ## หมายเหตุ
 
-- Access token มีอายุ 7 วัน เมื่อหมดอายุต้องล็อกอินใหม่
-- ผู้ใช้ถูกระบุด้วย Google account ID (`sub`) ไม่ใช่อีเมล จึงเปลี่ยนอีเมลใน Google ได้โดยข้อมูลไม่หาย
+- บัญชีผู้ใช้ อีเมล และรหัสผ่านอยู่ใน `auth.users` ของ Supabase ส่วนตาราง `public.profiles` เก็บเฉพาะข้อมูลที่แอปใช้ และใช้ id เดียวกัน ลบบัญชีใน Supabase แล้ว profile จะถูกลบตาม
 - ไฟล์ `.env` ถูกกำหนดไว้ใน `.gitignore` แล้ว ห้าม commit ขึ้น repository เพราะมีรหัสผ่านฐานข้อมูล
-- ตาราง `users` เปิด Row Level Security ไว้โดยไม่มี policy เพื่อปิด API อัตโนมัติของ Supabase ข้อมูลจึงเข้าถึงได้ผ่าน server นี้เท่านั้น
-- เลข `id` อาจข้ามได้ เพราะ `ON CONFLICT` ใช้เลขไปทุกครั้งที่ล็อกอินซ้ำ เป็นพฤติกรรมปกติของ PostgreSQL
+- ตาราง `profiles` เปิด Row Level Security ไว้โดยไม่มี policy เพื่อปิด API อัตโนมัติของ Supabase ข้อมูลจึงเข้าถึงได้ผ่าน server นี้เท่านั้น
+- ออกจากระบบทำที่หน้าเว็บผ่าน Supabase (`supabase.auth.signOut()`)
 
 ## ยังไม่ได้ทำ
 
-- [ ] `POST /auth/logout` — ปัจจุบัน logout ทำฝั่ง frontend โดยลบ token
-- [ ] Refresh token
-- [ ] API จัดการหนังสือ (`GET /books`, `POST /books`, `DELETE /books/:id`)
+- [ ] **ล็อกอินด้วย Google ยังใช้ไม่ได้ (รอ Google Cloud Console):** OAuth client อยู่ในโปรเจกต์ Google Cloud ของเพื่อน ต้องให้เพื่อนเชิญเข้า IAM เป็น Editor หรือทำ 2 อย่างแทน
+  1. เพิ่ม `https://sebnhurzudtgudpcgyjt.supabase.co/auth/v1/callback` ใน Authorized redirect URIs ของ OAuth client
+  2. ใส่ Client ID และ Client secret ใน Supabase → Authentication → Sign In / Providers → Google
+
+  ระหว่างนี้สมัครและล็อกอินด้วยอีเมล/รหัสผ่านได้ตามปกติ
+- [ ] หน้าตั้งรหัสผ่านใหม่ (ลืมรหัสผ่าน)
+- [ ] API จัดการชั้นหนังสือและความทรงจำ
