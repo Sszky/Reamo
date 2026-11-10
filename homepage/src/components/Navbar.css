@@ -91,9 +91,11 @@
   background: var(--butter);
 }
 
-.mobile-menu a {
+.mobile-menu a,
+.mobile-menu button {
   padding: 8px 0;
   font-size: 18px;
+  text-align: left;
 }
 
 .mobile-menu a[aria-current="page"] {
@@ -165,6 +167,16 @@
   .nav-login {
     background: var(--blush);
   }
+
+  .nav-user {
+    max-width: 14em;
+    overflow: hidden;
+    font-size: 15px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+
 
   .nav-login:hover {
     background: var(--paper);

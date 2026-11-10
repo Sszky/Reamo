@@ -236,8 +236,33 @@
 
 .auth-google {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 12px;
+  width: 100%;
   min-height: 44px;
+  padding: 8px 20px;
+  border: 1px solid #6b4f38a6;
+  border-radius: 999px;
+  background: #fffdf5;
+  color: var(--cocoa);
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.auth-google:hover {
+  background: var(--butter);
+}
+
+.auth-google svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.auth-submit:disabled {
+  cursor: progress;
+  opacity: 0.75;
 }
 
 .auth-switch {
@@ -252,14 +277,6 @@
   font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 4px;
-}
-
-.auth-preview-label {
-  margin: 2px 0 0;
-  color: var(--cocoa-soft);
-  font-size: 12px;
-  line-height: 1.5;
-  text-align: center;
 }
 
 @media (min-width: 600px) {
