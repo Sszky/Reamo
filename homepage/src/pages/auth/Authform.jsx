@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 
 import GoogleButton from "../../components/GoogleButton.jsx";
 
+import { books } from "../../books.js";
 import "./Auth.css";
 
 const translations = {
   en: {
     back: "Back to Home",
-    eyebrow: "YOUR LITTLE READING CORNER",
     story: "Every book leaves a little memory.",
     storyText:
       "Give your stories a home, and keep the feelings between the pages.",
@@ -46,7 +46,6 @@ const translations = {
 
   th: {
     back: "กลับหน้า Home",
-    eyebrow: "มุมอ่านหนังสือเล็ก ๆ ของคุณ",
     story: "หนังสือทุกเล่ม ทิ้งความทรงจำไว้เสมอ",
     storyText:
       "ให้เรื่องราวมีบ้าน และเก็บความรู้สึกดี ๆ ระหว่างหน้าหนังสือ",
@@ -154,27 +153,34 @@ export default function AuthForm({ mode, language }) {
   return (
     <main className="auth-page">
       <div className="auth-container">
-        <a className="auth-back" href="#home">
-          <span aria-hidden="true">←</span>
-          {t.back}
-        </a>
-
         <div className="auth-layout">
           <aside
             className="auth-story"
             aria-labelledby="auth-story-title"
           >
             <div className="auth-story-copy">
-              <p className="auth-eyebrow">{t.eyebrow}</p>
+              <a className="auth-back" href="#home">
+                <span aria-hidden="true">←</span>
+                {t.back}
+              </a>
 
               <h2 id="auth-story-title">{t.story}</h2>
 
               <p>{t.storyText}</p>
             </div>
 
-            <div className="auth-scene" aria-hidden="true" />
-
-            
+            <div className="auth-shelf" aria-hidden="true">
+              {books.map((book) => (
+                <span
+                  key={book.id}
+                  style={{
+                    "--spine-color": book.color,
+                    flexGrow: book.width,
+                    "--spine-height": `${book.height}px`,
+                  }}
+                />
+              ))}
+            </div>
           </aside>
 
           <section
@@ -182,8 +188,6 @@ export default function AuthForm({ mode, language }) {
             aria-labelledby="auth-title"
           >
             <span className="auth-bookmark" aria-hidden="true" />
-
-            <p className="auth-wordmark">REAMO</p>
 
             <h1 id="auth-title" ref={titleRef} tabIndex={-1}>
               {signup ? t.signupTitle : t.loginTitle}
@@ -197,104 +201,107 @@ export default function AuthForm({ mode, language }) {
               onSubmit={handleSubmit}
               onInput={clearFeedback}
             >
-              {signup && (
+              <div className={signup ? "auth-row" : undefined}>
+                {signup && (
+                  <div className="auth-field">
+                    <label htmlFor="auth-name">{t.name}</label>
+
+                    <input
+                      id="auth-name"
+                      name="displayName"
+                      ref={nameRef}
+                      required
+                      maxLength={80}
+                      autoComplete="nickname"
+                      placeholder={t.namePlaceholder}
+                    />
+                  </div>
+                )}
+
                 <div className="auth-field">
-                  <label htmlFor="auth-name">{t.name}</label>
+                  <label htmlFor="auth-email">{t.email}</label>
 
                   <input
-                    id="auth-name"
-                    name="displayName"
-                    ref={nameRef}
+                    id="auth-email"
+                    name="email"
+                    type="email"
                     required
-                    maxLength={80}
-                    autoComplete="nickname"
-                    placeholder={t.namePlaceholder}
+                    maxLength={254}
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    placeholder="you@example.com"
                   />
                 </div>
-              )}
-
-              <div className="auth-field">
-                <label htmlFor="auth-email">{t.email}</label>
-
-                <input
-                  id="auth-email"
-                  name="email"
-                  type="email"
-                  required
-                  maxLength={254}
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  placeholder="you@example.com"
-                />
               </div>
 
-              <div className="auth-field">
-                <label htmlFor="auth-password">
-                  {t.password}
-                </label>
+              <div className={signup ? "auth-row" : undefined}>
+                <div className="auth-field">
+                  <label htmlFor="auth-password">
+                    {t.password}
+                  </label>
 
-                <div className="auth-password">
-                  <input
-                    id="auth-password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    minLength={signup ? 8 : undefined}
-                    autoComplete={
-                      signup ? "new-password" : "current-password"
-                    }
-                    aria-describedby={
-                      signup ? "auth-password-hint" : undefined
-                    }
-                  />
+                  <div className="auth-password">
+                    <input
+                      id="auth-password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      minLength={signup ? 8 : undefined}
+                      autoComplete={
+                        signup ? "new-password" : "current-password"
+                      }
+                      aria-describedby={
+                        signup ? "auth-password-hint" : undefined
+                      }
+                    />
 
-                  <button
-                    type="button"
-                    aria-pressed={showPassword}
-                    aria-label={
-                      showPassword
-                        ? t.hidePassword
-                        : t.showPassword
-                    }
-                    onClick={() => {
-                      setShowPassword((value) => !value);
-                    }}
-                  >
-                    {showPassword ? t.hide : t.show}
-                  </button>
+                    <button
+                      type="button"
+                      aria-pressed={showPassword}
+                      aria-label={
+                        showPassword
+                          ? t.hidePassword
+                          : t.showPassword
+                      }
+                      onClick={() => {
+                        setShowPassword((value) => !value);
+                      }}
+                    >
+                      {showPassword ? t.hide : t.show}
+                    </button>
+                  </div>
+
+                  {signup && (
+                    <p
+                      className="auth-hint"
+                      id="auth-password-hint"
+                    >
+                      {t.passwordHint}
+                    </p>
+                  )}
                 </div>
 
                 {signup && (
-                  <p
-                    className="auth-hint"
-                    id="auth-password-hint"
-                  >
-                    {t.passwordHint}
-                  </p>
+                  <div className="auth-field">
+                    <label htmlFor="auth-confirm">
+                      {t.confirm}
+                    </label>
+
+                    <input
+                      id="auth-confirm"
+                      name="confirmPassword"
+                      ref={confirmRef}
+                      type={showPassword ? "text" : "password"}
+                      required
+                      autoComplete="new-password"
+                    />
+                  </div>
                 )}
               </div>
 
-              {signup && (
-                <div className="auth-field">
-                  <label htmlFor="auth-confirm">
-                    {t.confirm}
-                  </label>
-
-                  <input
-                    id="auth-confirm"
-                    name="confirmPassword"
-                    ref={confirmRef}
-                    type={showPassword ? "text" : "password"}
-                    required
-                    autoComplete="new-password"
-                  />
-                </div>
-              )}
-
               <button className="auth-submit" type="submit">
                 {signup ? t.signupButton : t.loginButton}
-                <span aria-hidden="true">→</span>
               </button>
 
               <p

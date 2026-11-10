@@ -10,10 +10,10 @@ export default function Navbar({
   onUnavailable,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuButton = useRef(null);
 
   const t = translations[language];
-  const signupLabel = language === "th" ? "สมัครสมาชิก" : "Sign up";
 
   useEffect(() => {
   function closeMenuOnNavigation() {
@@ -29,6 +29,17 @@ export default function Navbar({
     );
   };
 }, []);
+
+  useEffect(() => {
+    function checkScroll() {
+      setScrolled(window.scrollY > 60);
+    }
+
+    checkScroll();
+    window.addEventListener("scroll", checkScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, []);
 
   useEffect(() => {
     function handleKey(event) {
@@ -81,7 +92,7 @@ export default function Navbar({
   );
 
   return (
-    <header className="navbar">
+    <header className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div className="nav-inner">
         <a
           className="logo"
@@ -97,11 +108,11 @@ export default function Navbar({
         </nav>
 
         <div className="account-actions">
-          <a className="nav-pill" href="#signup">
-            {signupLabel}
+          <a className="nav-signup" href="#signup">
+            {t.signUp}
           </a>
 
-          <a className="nav-pill" href="#login">
+          <a className="nav-login" href="#login">
             {t.logIn}
           </a>
         </div>
@@ -153,7 +164,7 @@ export default function Navbar({
           {navigation}
 
           <a href="#signup" onClick={closeMenu}>
-            {signupLabel}
+            {t.signUp}
           </a>
 
           <a href="#login" onClick={closeMenu}>

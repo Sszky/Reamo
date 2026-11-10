@@ -1,134 +1,558 @@
+/* Hero: copy on the left, a round window into the room on the right. */
+
+/* Each home section fills one screen below the sticky navbar; the footer keeps its own size. */
 .hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: 60px 24px 100px;
+  display: grid;
+  gap: 36px;
+  align-content: center;
+  align-items: center;
+  max-width: 1280px;
+  min-height: calc(100dvh - var(--nav-h) - var(--band-h));
+  margin: 0 auto;
+  padding: 36px 20px 48px;
 }
 
-.hero-art {
-  position: absolute;
-  inset: -12px;
-  z-index: -3;
-  background: url("/images/pic1.jpg") center 50% / cover;
-  opacity: 0.4;
-  animation: drift 20s ease-in-out infinite alternate;
-}
-
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  background: linear-gradient(
-    90deg,
-    #fff5e633,
-    #fff5e6e8 28%,
-    #fff5e6ef 50%,
-    #fff5e6e8 72%,
-    #fff5e633
-  );
-}
-
-.hero-content {
-  max-width: 820px;
-  margin: auto;
-  text-align: center;
+.hero-kicker {
+  display: inline-block;
+  margin: 0 0 14px;
+  color: var(--rose);
+  font-family: var(--handwriting);
+  font-size: 20px;
+  rotate: -3deg;
 }
 
 .hero h1 {
-  margin: 0 0 16px;
-  font-size: clamp(70px, 19vw, 160px);
-  font-weight: 700;
-  letter-spacing: -0.045em;
-  line-height: 1.08;
+  margin: 0;
+  color: var(--rose);
+  font-size: clamp(32px, 3.7vw, 54px);
+  line-height: 1.3;
+  white-space: pre-line;
 }
 
 .tagline {
-  max-width: 360px;
-  margin: 0 auto;
-  font-size: 19px;
-  font-weight: 400;
-  line-height: 1.55;
+  max-width: 26em;
+  margin: 16px 0 24px;
+  color: var(--rose);
+  font-size: 18px;
 }
 
-.hero-actions {
+.others-link {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 17px;
-  margin-top: 30px;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: min(100%, 280px);
-  min-height: 52px;
-  padding: 14px 25px;
-  border-radius: 100px;
-  font-size: 19px;
-  font-weight: 600;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.sand {
-  background: var(--sand);
-}
-
-.green {
   gap: 10px;
-  background: var(--green);
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 8px 0;
+  color: var(--rose);
+  font-size: 16px;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
 }
 
-.pill:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 7px 16px #826b4f22;
-}
-
-.button-arrow {
-  width: 20px;
+.doodle-arrow {
+  width: 40px;
   height: 20px;
-  flex-shrink: 0;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: translate 0.2s;
 }
 
-.wave {
+.others-link:hover .doodle-arrow {
+  translate: 5px 0;
+}
+
+/* The picture is pinned to the page with tape, a note stuck on its edge. */
+.hero-art {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 580px);
+  padding-bottom: 36px;
+}
+
+.hero-circle {
+  aspect-ratio: 1;
+  margin: 0;
+  overflow: hidden;
+  border: 10px solid var(--paper);
+  border-radius: 50%;
+  box-shadow: 0 18px 30px -18px #4a322280;
+}
+
+.hero-tape {
+  top: 6%;
+  left: 4%;
+  rotate: -34deg;
+}
+
+.sticky-note {
   position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 35px;
-  fill: var(--cream);
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  width: 190px;
+  margin: 0;
+  padding: 16px 16px 20px;
+  background: var(--grain), var(--butter);
+  color: var(--cocoa);
+  font-family: var(--handwriting);
+  font-size: 17px;
+  line-height: 1.5;
+  box-shadow: 0 10px 14px -10px #4a322280;
+  rotate: 4deg;
 }
 
-.collection {
+.hero-circle img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* A strip of pink gingham, like the edge of a kitchen tablecloth. */
+.gingham-band {
+  height: var(--band-h);
+  background:
+    linear-gradient(90deg, #ef9fb466 50%, transparent 50%) 0 0 / 24px 24px,
+    linear-gradient(#ef9fb466 50%, transparent 50%) 0 0 / 24px 24px,
+    var(--blush);
+}
+
+/* More than a bookshelf: a sky-blue section with a scalloped hem. */
+
+.more {
+  /* Shelf scale: 1px at full size, shrinking on shorter screens so the section still fits. */
+  --u: 1px;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: calc(100dvh - var(--nav-h));
+  margin-bottom: 40px;
+  background: var(--grain), var(--sky);
+  color: var(--navy);
+}
+
+.more::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: var(--grain), var(--sky);
+  mask: radial-gradient(circle at 50% 0, #000 39.5px, transparent 40px)
+    center top / 80px 40px repeat-x;
+}
+
+.more-inner {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 20px 0 24px;
+  padding: 48px 20px 32px;
+}
+
+.more h2 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.3;
+  text-align: center;
+}
+
+.panel-switch {
+  display: inline-flex;
+  max-width: 100%;
+  margin: 28px 0 32px;
+  padding: 5px;
+  border-radius: 999px;
+  background: var(--cream);
+}
+
+.panel-switch button {
+  min-height: 44px;
+  padding: 6px 20px;
+  border-radius: 999px;
+  color: var(--cocoa);
+  font-size: 16px;
+  line-height: 1.3;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.panel-switch button[aria-pressed="true"] {
+  background: var(--mocha);
+  color: var(--paper);
+}
+
+.panel-switch button:focus-visible {
+  outline-offset: -5px;
+}
+
+/* The shelf: a hand-drawn wall shelf in the same pastels as the rest of the page. */
+
+.bookcase {
+  --shelf-height: calc(300 * var(--u) + 34px);
+  --plank-height: 20px;
+  --ribbon-room: 70px;
+  --outline: 2px solid var(--cocoa);
+
+  position: relative;
+  height: calc(var(--shelf-height) + var(--plank-height) + 30px);
+}
+
+.shelf {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  height: calc(var(--shelf-height) + var(--ribbon-room));
+  padding: 0 14px var(--ribbon-room);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.shelf::-webkit-scrollbar {
+  display: none;
+}
+
+.shelf-end {
+  display: none;
+}
+
+/* Flat, outlined covers with two bands near each end, like a drawing of a book. */
+.spine {
+  --band: #4a32228c;
+
+  position: relative;
+  flex: 0 0 var(--spine-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spine-width);
+  height: calc(var(--spine-h) * var(--u));
+  margin-right: -2px;
+  padding: calc(34 * var(--u)) 4px;
+  overflow: hidden;
+  border: var(--outline);
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  background:
+    linear-gradient(var(--band), var(--band)) 0 16px / 100% 2px no-repeat,
+    linear-gradient(var(--band), var(--band)) 0 22px / 100% 2px no-repeat,
+    linear-gradient(var(--band), var(--band)) 0 calc(100% - 16px) / 100% 2px no-repeat,
+    linear-gradient(var(--band), var(--band)) 0 calc(100% - 22px) / 100% 2px no-repeat,
+    var(--grain),
+    var(--spine-color);
+  color: var(--spine-ink);
+  transition: transform 0.25s ease;
+}
+
+.spine:nth-child(odd) {
+  border-radius: 7px 4px 0 0;
+}
+
+button.spine:hover {
+  transform: translateY(-8px);
+}
+
+button.spine[aria-pressed="true"] {
+  transform: translateY(-26px);
+  overflow: visible;
+}
+
+button.spine:focus-visible {
+  z-index: 2;
+  outline: 3px solid var(--cocoa);
+  outline-offset: 3px;
+}
+
+button.spine[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 100%;
+  left: calc(50% - 8px);
+  width: 16px;
+  height: 66px;
+  background: var(--rose);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);
+}
+
+.spine-title {
+  display: block;
+  max-height: 100%;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  writing-mode: vertical-rl;
+}
+
+.spine-filler {
+  display: inline-block;
+  flex: none;
+}
+
+/* One book leans on its neighbour, the way real shelves never stay tidy. */
+.shelf-end:last-child .spine-filler:first-child {
+  margin-right: 26px;
+  rotate: 9deg;
+  transform-origin: left bottom;
+}
+
+.shelf-plant {
+  flex: none;
+  width: calc(74 * var(--u));
+  margin: 0 6px 0 10px;
+}
+
+.shelf-plant svg {
+  display: block;
+  width: 100%;
+  stroke: var(--cocoa);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.plank {
+  position: absolute;
+  z-index: 1;
+  top: var(--shelf-height);
+  left: 0;
+  right: 0;
+  height: var(--plank-height);
+  border: var(--outline);
+  border-radius: 4px;
+  background: var(--grain), var(--honey);
+  box-shadow: 0 10px 14px -10px #2c3e5e99;
+}
+
+/* Wooden brackets holding the shelf to the wall. */
+.plank::before,
+.plank::after {
+  content: "";
+  position: absolute;
+  top: calc(100% + 2px);
+  width: 30px;
+  height: 30px;
+  background: var(--cocoa);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.plank::before {
+  left: 12%;
+}
+
+.plank::after {
+  right: 12%;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.memory-row {
+  display: grid;
+  gap: 18px;
+  padding-top: 26px;
+}
+
+.shelf-hint {
+  max-width: 22em;
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Overlapping layers in one grid cell: the cell takes the tallest layer's height. */
+.layer-stack {
+  display: grid;
+}
+
+.layer-stack > * {
+  grid-area: 1 / 1;
+}
+
+.layer-hidden {
+  visibility: hidden;
+}
+
+.memory-slip {
+  max-width: 640px;
+  padding: 24px 24px 18px;
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--cocoa);
+  box-shadow: 0 14px 24px -14px #2c3e5e80;
+  rotate: -0.5deg;
+}
+
+.memory-slip h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.slip-author {
+  margin: 0;
+  color: var(--cocoa-soft);
+  font-size: 15px;
+}
+
+.reader-voice {
+  margin: 0;
+  font-family: var(--handwriting);
+  line-height: 1.75;
+}
+
+.memory-slip .reader-voice {
+  min-height: 3.5em;
+  margin-top: 14px;
+  font-size: 20px;
+}
+
+.slip-moment {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 20px;
+  margin: 14px 0 0;
+  color: var(--cocoa-soft);
+  font-size: 14px;
+}
+
+/* The shared library tab: pick a feeling, get catalog cards. */
+
+.library-panel {
+  display: grid;
+  gap: 28px;
+}
+
+.library-intro {
+  max-width: 28em;
+  margin: 0;
+  font-size: 18px;
+}
+
+.feelings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.feelings button {
+  min-height: 48px;
+  padding: 8px 0;
+  font-family: var(--handwriting);
+  font-size: 22px;
+  line-height: 1.4;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+
+.feelings button:hover,
+.feelings button[aria-pressed="true"] {
+  text-decoration-color: currentColor;
+}
+
+.catalog-cards {
+  display: grid;
+  gap: 16px;
+}
+
+.library-card {
+  position: relative;
+  padding: 18px 22px 34px;
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--cocoa);
+}
+
+.library-card::after {
+  content: "";
+  position: absolute;
+  bottom: 10px;
+  left: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--sky);
+}
+
+.library-card h3 {
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #8f5a4c66;
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.card-author {
+  margin: 6px 0 0;
+  color: var(--cocoa-soft);
+  font-size: 15px;
+}
+
+.library-card .reader-voice {
+  margin-top: 8px;
+  font-size: 17px;
+}
+
+.catalog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 20px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+/* Collect: three pictures in a row. */
+
+.collection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 1280px;
+  min-height: calc(100dvh - var(--nav-h));
+  margin: 0 auto;
+  padding: 48px 20px 16px;
 }
 
 .section-heading {
-  margin-bottom: 30px;
-  padding: 0 24px;
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 20px;
+  margin-bottom: 14px;
 }
 
 .collection h2 {
   margin: 0;
-  font-size: 23px;
-  font-weight: 600;
+  font-size: 26px;
   line-height: 1.4;
 }
 
 .explore-link {
-  padding: 12px 8px;
-  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 0;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .explore-link:hover {
@@ -136,206 +560,216 @@
   text-underline-offset: 5px;
 }
 
-.desktop-more {
-  display: none;
+/* Photos taped into a scrapbook, each tilted a little differently. */
+.gallery {
+  display: grid;
+  gap: 40px;
+  padding: 18px 6px 0;
 }
 
-.mobile-more {
-  display: block;
-  margin: 18px auto 0;
-}
-
-.carousel {
+.photo {
   position: relative;
-}
-
-.card-track {
-  position: relative;
-  display: flex;
-  gap: 18px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  scroll-snap-type: x mandatory;
-  padding: 12px calc((100% - 76%) / 2) 18px;
-}
-
-.card-track::-webkit-scrollbar {
-  display: none;
-}
-
-.image-card {
-  flex: 0 0 100%;
-  width: 100%;
-  aspect-ratio: 1.2;
   margin: 0;
-  overflow: hidden;
-  border-radius: 22px;
-  background: var(--sand);
-  scroll-snap-align: center;
-  box-shadow: 0 5px 12px #826b4f18;
-  transition: transform 0.3s ease;
+  padding: 12px 12px 0;
+  background: var(--paper);
+  box-shadow: 0 14px 22px -16px #4a322299;
+  rotate: -1.5deg;
 }
 
-.image-card img {
+.photo:nth-child(2) {
+  rotate: 1.2deg;
+}
+
+.photo:nth-child(3) {
+  rotate: -0.6deg;
+}
+
+.photo .tape {
+  top: -14px;
+  left: calc(50% - 56px);
+  rotate: 3deg;
+}
+
+.photo:nth-child(2) .tape {
+  rotate: -4deg;
+}
+
+.photo-frame {
+  aspect-ratio: 1.3;
+  overflow: hidden;
+  background: var(--butter);
+}
+
+.photo-frame img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.image-card:nth-child(1) img {
-  object-position: center 50%;
+.photo:nth-child(1) img {
+  object-position: center 55%;
 }
 
-.image-card:nth-child(2) img {
-  object-position: center 61%;
+.photo:nth-child(2) img {
+  object-position: center 45%;
 }
 
-.image-card:nth-child(3) img {
-  object-position: center 46%;
+/* Zoomed into the lower left so the watermark in this image stays out of frame. */
+.photo:nth-child(3) img {
+  scale: 1.9;
+  object-position: center bottom;
+  transform-origin: left bottom;
 }
 
-.carousel-arrow {
-  position: absolute;
-  top: calc(50% - 24px);
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--cream);
-  box-shadow: 0 3px 10px #826b4f26;
-}
-
-.carousel-arrow svg {
-  width: 23px;
-  height: 23px;
-  fill: none;
-  stroke: var(--brown);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.previous {
-  left: 6px;
-}
-
-.next {
-  right: 6px;
-}
-
-.carousel-arrow:disabled {
-  opacity: 0.45;
-}
-
-@keyframes drift {
-  from {
-    transform: translate(-8px, -4px) scale(1.06);
-  }
-
-  to {
-    transform: translate(8px, 4px) scale(1.08);
-  }
-}
-
-@media (min-width: 600px) {
-  .hero {
-    padding: 65px 32px 90px;
-  }
-
-  .hero-actions {
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-  }
-
-  .pill {
-    width: auto;
-    min-width: 175px;
-  }
-
-  .tagline {
-    max-width: 520px;
-    font-size: 21px;
-  }
-
-  .image-card {
-    aspect-ratio: 1.45;
-  }
-
-  .collection {
-    padding-top: 30px;
-  }
+.photo figcaption {
+  padding: 10px 4px 14px;
+  font-family: var(--handwriting);
+  font-size: 17px;
+  line-height: 1.4;
+  text-align: center;
 }
 
 @media (min-width: 768px) {
   .hero {
-    padding: 78px 32px 100px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 40px;
+    padding: 24px 40px 32px;
   }
 
-  .hero h1 {
-    font-size: clamp(115px, 14vw, 180px);
+  /* The circle never gets taller than the space under the navbar. */
+  .hero-art {
+    width: min(100%, 580px, calc(100dvh - var(--nav-h) - var(--band-h) - 100px));
   }
 
-  .tagline {
-    max-width: 540px;
+  .more {
+    --u: clamp(0.55px, calc((100dvh - var(--nav-h) - 555px) / 330), 1px);
   }
 
-  .hero-actions {
-    margin-top: 26px;
+  .more-inner {
+    padding: 40px 40px 32px;
+  }
+
+  .shelf {
+    justify-content: center;
+    padding: 0 0 var(--ribbon-room);
+    overflow: hidden;
+  }
+
+  .shelf-end {
+    display: flex;
+    flex: 1 1 0;
+    align-items: flex-end;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .shelf-end:first-child {
+    justify-content: flex-end;
+  }
+
+  .memory-row {
+    grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr);
+    gap: 40px;
+    padding-top: 28px;
+  }
+
+  .shelf-hint {
+    padding-top: 40px;
+  }
+
+  .library-panel {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 64px;
   }
 
   .collection {
-    padding: 22px 40px 20px;
+    padding: 64px 40px 16px;
   }
 
-  .section-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    padding: 0;
-    text-align: left;
-  }
-
-  .collection h2 {
-    font-size: 26px;
-  }
-
-  .desktop-more {
-    display: block;
-  }
-
-  .mobile-more,
-  .carousel-arrow {
-    display: none;
-  }
-
-  .card-track {
-    overflow: visible;
-    padding: 10px 0 18px;
-    gap: 25px;
-  }
-
-  .image-card {
-    flex: 1 1 0;
-    min-width: 0;
-    aspect-ratio: 1.38;
-    border-radius: 24px;
-  }
-
-  .image-card:hover {
-    transform: translateY(-6px) rotate(-0.5deg);
+  .gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
   }
 }
 
-@media (min-width: 1100px) {
-  .hero {
-    padding: 80px 32px 100px;
+/* Shorter laptop screens: tighten the bookshelf section so it still fits one screen. */
+@media (min-width: 768px) and (max-height: 820px) {
+  .more {
+    --u: clamp(0.42px, calc((100dvh - var(--nav-h) - 425px) / 330), 1px);
   }
 
-  .image-card {
-    aspect-ratio: 1.6;
+  .more-inner {
+    padding: 20px 40px 18px;
+  }
+
+  .more h2 {
+    font-size: 34px;
+  }
+
+  .panel-switch {
+    margin: 12px 0 14px;
+  }
+
+  .memory-row {
+    padding-top: 22px;
+  }
+
+  .shelf-hint {
+    padding-top: 24px;
+  }
+
+  .memory-slip {
+    padding: 14px 20px 12px;
+  }
+
+  .memory-slip h3 {
+    font-size: 19px;
+  }
+
+  .memory-slip .reader-voice {
+    min-height: 0;
+    margin-top: 6px;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .slip-moment {
+    margin-top: 8px;
+  }
+
+  .collection {
+    padding-top: 32px;
+  }
+
+  .photo-frame {
+    aspect-ratio: 1.45;
+  }
+}
+
+/* Very short screens (small laptops with the browser toolbar open). */
+@media (min-width: 768px) and (max-height: 680px) {
+  .more-inner {
+    padding: 14px 40px 12px;
+  }
+
+  .more h2 {
+    font-size: 28px;
+  }
+
+  .panel-switch {
+    margin: 8px 0 10px;
+  }
+
+  .panel-switch button {
+    min-height: 38px;
+  }
+
+  .memory-row {
+    padding-top: 18px;
+  }
+
+  .memory-slip .reader-voice {
+    font-size: 16px;
   }
 }

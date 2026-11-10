@@ -1,211 +1,295 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
+import { books, feelings, shelfFiller } from "../../books.js";
 import { translations } from "../../i18n.js";
 import "./Home.css";
 
-const scenes = [
-  "/images/pic1.jpg",
-  "/images/pic2.jpg",
-  "/images/pic3.jpg",
-];
+const imageUrl = (name) => `${import.meta.env.BASE_URL}images/${name}`;
+
+const heroImage = imageUrl("pic1.jpg");
+const galleryImages = ["pic1.jpg", "pic3.jpg", "pic2.jpg"].map(imageUrl);
+
+// Enough unnamed books to fill the shelf on either side of the named ones.
+const leftFiller = Array(2).fill(shelfFiller).flat();
+const rightFiller = [...leftFiller].reverse();
+
+// A loose, hand-drawn arrow so links don't end in a typed "→".
+function DoodleArrow() {
+  return (
+    <svg
+      className="doodle-arrow"
+      viewBox="0 0 48 24"
+      aria-hidden="true"
+    >
+      <path d="M3 15c8-6 17-9 27-6 4 1 8 3 13 2" />
+      <path d="M36 4c3 2 6 4 8 7-3 2-6 4-9 7" />
+    </svg>
+  );
+}
+
+function FillerBooks({ items }) {
+  return items.map((book, index) => (
+    <span
+      className="spine spine-filler"
+      key={index}
+      style={{
+        "--spine-color": book.color,
+        "--spine-width": `${book.width}px`,
+        "--spine-h": book.height,
+      }}
+    />
+  ));
+}
+
+function ShelfPanel({ language, t }) {
+  const [selectedId, setSelectedId] = useState("painting");
+
+  return (
+    <>
+      <div className="bookcase">
+        <div className="shelf" role="group" aria-label={t.shelfLabel}>
+          <span className="shelf-end" aria-hidden="true">
+            <FillerBooks items={leftFiller} />
+          </span>
+
+          {books.map((book) => (
+            <button
+              className="spine"
+              type="button"
+              key={book.id}
+              aria-pressed={book.id === selectedId}
+              style={{
+                "--spine-color": book.color,
+                "--spine-ink": book.ink,
+                "--spine-width": `${book.width}px`,
+                "--spine-h": book.height,
+              }}
+              onClick={() => setSelectedId(book.id)}
+            >
+              <span className="spine-title">{book.title[language]}</span>
+            </button>
+          ))}
+
+          <span className="shelf-plant" aria-hidden="true">
+            <svg viewBox="0 0 74 120">
+              <path d="M37 70C30 52 16 46 6 50c6 12 18 18 31 20Z" fill="#c9d9b0" />
+              <path d="M37 70c6-20 20-27 31-24-5 13-17 21-31 24Z" fill="#a8c6b4" />
+              <path d="M37 70C33 46 38 26 46 16c7 16 3 38-9 54Z" fill="#c9d9b0" />
+              <path d="M37 70V42" fill="none" />
+              <path d="M14 72h46l-6 46H20Z" fill="#e8a87c" />
+              <path d="M10 66h54v10H10Z" fill="#f0c9a8" />
+            </svg>
+          </span>
+
+          <span className="shelf-end" aria-hidden="true">
+            <FillerBooks items={rightFiller} />
+          </span>
+        </div>
+
+        <div className="plank" aria-hidden="true" />
+      </div>
+
+      <div className="memory-row">
+        <p className="shelf-hint">{t.shelfHint}</p>
+
+        {/* Every note sits in the same spot and only the chosen one shows,
+            so the area is always as tall as the longest note and the shelf never moves. */}
+        <div className="layer-stack" aria-live="polite">
+          {books.map((book) => (
+            <article
+              className={`memory-slip ${book.id === selectedId ? "" : "layer-hidden"}`}
+              key={book.id}
+              aria-hidden={book.id === selectedId ? undefined : true}
+            >
+              <h3>{book.title[language]}</h3>
+              <p className="slip-author">{book.author[language]}</p>
+              <p className="reader-voice">{book.memory[language]}</p>
+              <p className="slip-moment">
+                {book.moment[language]}
+                <span>{t.sampleMemory}</span>
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function LibraryPanel({ language, t, onUnavailable }) {
+  const [feelingId, setFeelingId] = useState("home");
+
+  return (
+    <div className="library-panel">
+      <div>
+        <p className="library-intro">{t.libraryIntro}</p>
+
+        <div className="feelings" role="group" aria-label={t.feelingLabel}>
+          {feelings.map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              aria-pressed={item.id === feelingId}
+              onClick={() => setFeelingId(item.id)}
+            >
+              {item.label[language]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        {/* Same idea as the memory notes: all card sets share one spot. */}
+        <div className="layer-stack" aria-live="polite">
+          {feelings.map((item) => (
+            <div
+              className={`catalog-cards ${item.id === feelingId ? "" : "layer-hidden"}`}
+              key={item.id}
+              aria-hidden={item.id === feelingId ? undefined : true}
+            >
+              {item.picks.map((pick) => {
+                const book = books.find((entry) => entry.id === pick.book);
+
+                return (
+                  <article className="library-card" key={pick.book}>
+                    <h3>{book.title[language]}</h3>
+                    <p className="card-author">{book.author[language]}</p>
+                    <p className="reader-voice">{pick.reason[language]}</p>
+                  </article>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div className="catalog-footer">
+          <span>{t.samplePicks}</span>
+
+          <button
+            className="text-link"
+            type="button"
+            onClick={onUnavailable}
+          >
+            {t.browse}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home({ language, onUnavailable }) {
-  const [current, setCurrent] = useState(1);
-  const gallery = useRef(null);
+  const [panel, setPanel] = useState("shelf");
 
   const t = translations[language];
-
-  useEffect(() => {
-    const node = gallery.current;
-
-    function center() {
-      const card = node?.children[1];
-
-      if (node && card && window.innerWidth < 768) {
-        node.scrollLeft =
-          card.offsetLeft -
-          node.offsetLeft -
-          (node.clientWidth - card.clientWidth) / 2;
-      }
-    }
-
-    center();
-    window.addEventListener("resize", center);
-
-    return () => window.removeEventListener("resize", center);
-  }, []);
-
-  function moveCard(direction) {
-    const node = gallery.current;
-    if (!node) return;
-
-    const next = Math.max(
-      0,
-      Math.min(scenes.length - 1, current + direction),
-    );
-
-    const card = node.children[next];
-
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    node.scrollTo({
-      left:
-        card.offsetLeft -
-        node.offsetLeft -
-        (node.clientWidth - card.clientWidth) / 2,
-      behavior: reducedMotion ? "instant" : "smooth",
-    });
-
-    setCurrent(next);
-  }
-
-  function trackCard() {
-    const node = gallery.current;
-    if (!node) return;
-
-    const middle = node.scrollLeft + node.clientWidth / 2;
-
-    let closest = 0;
-    let distance = Infinity;
-
-    [...node.children].forEach((card, index) => {
-      const value = Math.abs(
-        card.offsetLeft -
-          node.offsetLeft +
-          card.clientWidth / 2 -
-          middle,
-      );
-
-      if (value < distance) {
-        closest = index;
-        distance = value;
-      }
-    });
-
-    setCurrent(closest);
-  }
 
   return (
     <main id="home">
       <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-art" aria-hidden="true" />
-        <div className="hero-overlay" aria-hidden="true" />
-
-        <div className="hero-content">
-          <h1 id="hero-title">REAMO</h1>
-
+        <div className="hero-copy">
+          <p className="hero-kicker">Read + Memory</p>
+          <h1 id="hero-title">{t.heroTitle}</h1>
           <p className="tagline">{t.tagline}</p>
 
-          <div className="hero-actions">
-            <a className="pill sand" href="#signup">
-              {t.start}
-            </a>
+          <a className="button-primary" href="#signup">
+            {t.start}
+          </a>
 
-            <button
-              className="pill green"
-              type="button"
-              onClick={onUnavailable}
-            >
-              <span>{t.about}</span>
-
-              <svg
-                className="button-arrow"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M4 12h15m-6-6 6 6-6 6" />
-              </svg>
-            </button>
-          </div>
+          <button
+            className="others-link"
+            type="button"
+            onClick={onUnavailable}
+          >
+            {t.others}
+            <DoodleArrow />
+          </button>
         </div>
 
-        <svg
-          className="wave"
-          viewBox="0 0 1440 70"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M0 30 C120 0 200 65 340 35
-               S550 5 700 36 S920 65 1060 30
-               S1320 8 1440 32 V70H0Z"
-          />
-        </svg>
+        <div className="hero-art">
+          <figure className="hero-circle">
+            <img
+              src={heroImage}
+              alt={t.alt[0]}
+              width="736"
+              height="920"
+            />
+          </figure>
+
+          <span className="tape hero-tape" aria-hidden="true" />
+
+          <p className="sticky-note">{t.heroNote}</p>
+        </div>
       </section>
 
-      <section
-        className="collection"
-        aria-labelledby="collection-title"
-      >
+      <div className="gingham-band" aria-hidden="true" />
+
+      <section className="more" aria-labelledby="more-title">
+        <div className="more-inner">
+          <h2 id="more-title">{t.moreTitle}</h2>
+
+          <div className="panel-switch" role="group" aria-label={t.moreTitle}>
+            <button
+              type="button"
+              aria-pressed={panel === "shelf"}
+              onClick={() => setPanel("shelf")}
+            >
+              {t.yourShelf}
+            </button>
+
+            <button
+              type="button"
+              aria-pressed={panel === "library"}
+              onClick={() => setPanel("library")}
+            >
+              {t.sharedLibrary}
+            </button>
+          </div>
+
+          {panel === "shelf" ? (
+            <ShelfPanel language={language} t={t} />
+          ) : (
+            <LibraryPanel
+              language={language}
+              t={t}
+              onUnavailable={onUnavailable}
+            />
+          )}
+        </div>
+      </section>
+
+      <section className="collection" aria-labelledby="collection-title">
         <div className="section-heading">
           <h2 id="collection-title">{t.collect}</h2>
 
           <button
-            className="explore-link desktop-more"
+            className="explore-link"
             type="button"
             onClick={onUnavailable}
           >
             {t.more}
+            <span aria-hidden="true">›</span>
           </button>
         </div>
 
-        <div
-          className="carousel"
-          role="region"
-          aria-label={t.gallery}
-        >
-          <div
-            className="card-track"
-            ref={gallery}
-            onScroll={trackCard}
-          >
-            {scenes.map((src, index) => (
-              <figure className="image-card" key={src}>
+        <div className="gallery">
+          {galleryImages.map((src, index) => (
+            <figure className="photo" key={src}>
+              <span className="tape" aria-hidden="true" />
+
+              <div className="photo-frame">
                 <img
                   src={src}
                   alt={t.alt[index]}
                   loading="lazy"
                   width="640"
-                  height="460"
+                  height="400"
                 />
-              </figure>
-            ))}
-          </div>
+              </div>
 
-          <button
-            className="carousel-arrow previous"
-            type="button"
-            aria-label={t.previous}
-            disabled={current === 0}
-            onClick={() => moveCard(-1)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m15 5-7 7 7 7" />
-            </svg>
-          </button>
-
-          <button
-            className="carousel-arrow next"
-            type="button"
-            aria-label={t.next}
-            disabled={current === scenes.length - 1}
-            onClick={() => moveCard(1)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m9 5 7 7-7 7" />
-            </svg>
-          </button>
+              <figcaption>{t.captions[index]}</figcaption>
+            </figure>
+          ))}
         </div>
-
-        <button
-          className="explore-link mobile-more"
-          type="button"
-          onClick={onUnavailable}
-        >
-          {t.more}
-        </button>
       </section>
     </main>
   );
