@@ -30,32 +30,36 @@
 
 ```
 ผู้ใช้ -> frontend -> Express (backend) -> database
-                       ใช้ service_role key
+         (login ผ่าน    (ตรวจ token แล้วต่อ DB ตรงด้วย DATABASE_URL)
+          Supabase Auth)
 ```
 
 - frontend ใช้ Supabase เฉพาะเรื่อง **login (Auth)** ไม่อ่านหรือเขียนตารางข้อมูลตรง
-- backend ใช้ **service_role key** ซึ่งข้าม RLS ได้ทั้งหมด
+- backend ตรวจ token (JWT) ของ Supabase Auth แล้วเชื่อมต่อ PostgreSQL ตรงด้วย `DATABASE_URL`
+  ไม่ผ่าน Data API ของ Supabase จึง **ไม่จำเป็นต้องเปิด Data API**
 - ตารางข้อมูลของแอป: เปิด RLS, **ไม่มี policy**, และถอนสิทธิ์ของ `anon`/`authenticated`
-  จึงเข้าผ่าน Data API ด้วย key ฝั่ง frontend ไม่ได้ (ตั้งใจ)
+  เพื่อกันกรณีที่ใครเปิด Data API ในอนาคต key ฝั่ง frontend จะยังเข้าตารางตรงไม่ได้ (ตั้งใจ)
 
-**กฎสิทธิ์ต้องตรวจในโค้ด Express ทุกครั้ง** เพราะ service_role ทำได้ทุกอย่าง ฐานข้อมูลไม่ได้ช่วยกัน เช่น
+**กฎสิทธิ์ต้องตรวจในโค้ด Express ทุกครั้ง** เพราะ role ที่ใช้ใน `DATABASE_URL` ปกติข้าม RLS ได้
+ฐานข้อมูลจึงไม่ช่วยกันสิทธิ์ให้ เช่น
 
 - เพิ่มเข้าลิสต์/ชั้นหนังสือได้เฉพาะของตัวเอง
 - แก้/ลบหนังสือได้เฉพาะเมื่อ `books.created_by` ตรงกับผู้ใช้ที่ login
   (ถ้า `created_by` เป็น `null` ต้องถือว่าแก้ไม่ได้)
 - ตรวจ token ของ Supabase Auth ก่อนทุกคำขอ แล้วใช้ id จาก token ไม่ใช่จาก body ที่ client ส่งมา
 
-**Key**
+**ความลับ**
 
-- `service_role` key ใช้เฉพาะฝั่ง backend เก็บใน environment variable
-  ห้ามใส่ใน repo นี้ (เป็น public) และห้ามอยู่ในโค้ด frontend
-- ถ้า key หลุด ให้เปลี่ยน (rotate) ที่หน้า API Keys ของ Supabase ทันที
-- ดูชื่อตัวแปรที่ต้องตั้งใน `.env.example`
+- `DATABASE_URL` มีรหัสผ่านฐานข้อมูล เป็นความลับสูงสุด ใช้เฉพาะฝั่ง backend เก็บใน `.env`
+  ห้ามใส่ใน repo นี้ (เป็น public) ห้ามอยู่ในโค้ด frontend และห้ามส่งในแชต
+- ถ้าหลุด ให้เปลี่ยนรหัสผ่านฐานข้อมูลที่ Supabase (Project Settings > Database) ทันที
+  แล้วอัปเดตค่าใน `.env` ของ backend
+- ชื่อตัวแปรที่ต้องตั้งดูใน `server/.env.example`
 
 **ตารางใหม่ต้องทำเสมอ:** `alter table ... enable row level security;`
 (สิทธิ์เริ่มต้นตาม `04_default_privileges.sql` ปิดไว้ให้แล้ว แต่ RLS ต้องเปิดเอง)
 
-**ถ้าจะให้ frontend เข้าตารางใดตรงๆ** ต้องทำคู่กัน: `grant` สิทธิ์ที่จำเป็นให้ `authenticated`
+**ถ้าจะให้ frontend เข้าตารางใดตรงๆ** (ต้องเปิด Data API ก่อน) ต้องทำคู่กัน: `grant` สิทธิ์ที่จำเป็นให้ `authenticated`
 และเขียน RLS policy ให้ถูกต้อง ขาดอย่างใดอย่างหนึ่งจะใช้ไม่ได้ และอย่าเขียน policy หลวมๆ เผื่อไว้
 
 ## ข้อตกลงที่ควรรู้
